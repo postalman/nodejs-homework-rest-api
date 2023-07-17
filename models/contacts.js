@@ -1,12 +1,12 @@
 import fs from "fs/promises";
 import path from "path";
 import { nanoid } from "nanoid";
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const contactsPath = path.join(__dirname, 'db', 'contacts.json');
+const contactsPath = path.join(__dirname, "contacts.json");
 
 async function listContacts() {
   const data = await fs.readFile(contactsPath, "utf-8");
@@ -15,13 +15,13 @@ async function listContacts() {
 
 async function getContactById(contactId) {
   const contact = await listContacts();
-  const result = contact.find((item) => item.contactId === contactId);
+  const result = contact.find((item) => item.id === contactId);
   return result || null;
 }
 
 async function removeContact(contactId) {
   const contacts = await listContacts();
-  const index = contacts.findIndex((item) => item.contactId === contactId);
+  const index = contacts.findIndex((item) => item.id === contactId);
   if (index === -1) {
     return null;
   }
@@ -30,7 +30,8 @@ async function removeContact(contactId) {
   return result;
 }
 
-async function addContact(name, email, phone) {
+async function addContact(contactData) {
+  const { name, email, phone } = contactData;
   const contact = await listContacts();
   const newContact = {
     id: nanoid(),
@@ -55,4 +56,10 @@ async function updateContact(contactId, body) {
   return updatedContact;
 }
 
-export { listContacts, getContactById, removeContact, addContact, updateContact };
+export default {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContact,
+};
