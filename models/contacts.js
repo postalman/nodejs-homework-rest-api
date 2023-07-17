@@ -1,19 +1,65 @@
-// const fs = require('fs/promises')
+import fs from "fs/promises";
+import path from "path";
+import { nanoid } from "nanoid";
+import { fileURLToPath } from "url";
 
-const listContacts = async () => {}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const getContactById = async (contactId) => {}
+const contactsPath = path.join(__dirname, "contacts.json");
 
-const removeContact = async (contactId) => {}
+async function listContacts() {
+  const data = await fs.readFile(contactsPath, "utf-8");
+  return JSON.parse(data);
+}
 
-const addContact = async (body) => {}
+async function getContactById(contactId) {
+  const contact = await listContacts();
+  const result = contact.find((item) => item.id === contactId);
+  return result || null;
+}
 
-const updateContact = async (contactId, body) => {}
+async function removeContact(contactId) {
+  const contacts = await listContacts();
+  const index = contacts.findIndex((item) => item.id === contactId);
+  if (index === -1) {
+    return null;
+  }
+  const [result] = contacts.splice(index, 1);
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return result;
+}
 
-module.exports = {
+async function addContact(contactData) {
+  const { name, email, phone } = contactData;
+  const contact = await listContacts();
+  const newContact = {
+    id: nanoid(),
+    name,
+    email,
+    phone,
+  };
+  contact.push(newContact);
+  await fs.writeFile(contactsPath, JSON.stringify(contact, null, 2));
+  return newContact;
+}
+
+async function updateContact(contactId, body) {
+  const contacts = await listContacts();
+  const index = contacts.findIndex((item) => item.id === contactId);
+  if (index === -1) {
+    return null;
+  }
+  const updatedContact = { ...contacts[index], ...body };
+  contacts[index] = updatedContact;
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return updatedContact;
+}
+
+export default {
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContact,
-}
+};
